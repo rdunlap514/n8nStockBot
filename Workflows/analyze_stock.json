@@ -12,7 +12,7 @@
         128
       ],
       "id": "98ec81ba-fabd-4fab-8c61-8a0fa844b7e5",
-      "name": "Merge"
+      "name": "Merge Candle Data"
     },
     {
       "parameters": {
@@ -26,11 +26,11 @@
         128
       ],
       "id": "139b3edd-9329-48e5-ac5e-2847fc6eafa5",
-      "name": "Aggregate"
+      "name": "Aggregate Candle Data"
     },
     {
       "parameters": {
-        "jsCode": "const root = items[0].json;\n\n// extract datasets\nconst data1h = root.data[0];\n// 8 hours\nconst data2h = root.data[1];\n// 1 day\nconst data4h = root.data[2];\n// 1 week\n\n//standardize format\nfunction normalize(values){\n  return values\n   .map(v => ({\n     time: new Date(v.datetime),\n     open: parseFloat(v.open),\n     high: parseFloat(v.high),\n     low: parseFloat(v.low),\n     close: parseFloat(v.close),\n     volume: parseFloat(v.volume),\n   }))\n  .sort((a, b) => a.time - b.time);\n}\n\nreturn [\n  {\n    json: {\n      ticker: data1h.meta?.symbol,\n      candles1h: normalize(data1h.values),\n      candles2h: normalize(data2h.values),\n      candles4h: normalize(data4h.values)\n    }\n  }\n];"
+        "jsCode": "const root = items[0].json;\nconst datasets = root.data || [];\n\nconst data1h = datasets[0] || {};\nconst data2h = datasets[1] || {};\nconst data8h = datasets[2] || {};\n\nfunction normalize(values = []) {\n  return values\n    .map(v => ({\n      time: new Date(v.datetime),\n      open: parseFloat(v.open),\n      high: parseFloat(v.high),\n      low: parseFloat(v.low),\n      close: parseFloat(v.close),\n      volume: parseFloat(v.volume),\n    }))\n    .filter(v => !Number.isNaN(v.close))\n    .sort((a, b) => a.time - b.time);\n}\n\nreturn [\n  {\n    json: {\n      ticker: data1h.meta?.symbol || data2h.meta?.symbol || data8h.meta?.symbol || null,\n      candles1h: normalize(data1h.values),\n      candles2h: normalize(data2h.values),\n      candles8h: normalize(data8h.values)\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -39,7 +39,7 @@
         128
       ],
       "id": "9966556e-e37a-4b58-9d9b-8b3be5b2ea59",
-      "name": "CleanUp"
+      "name": "Clean Candle Data"
     },
     {
       "parameters": {
@@ -53,11 +53,15 @@
             },
             {
               "name": "q",
-              "value": "={{ $json.name }}"
+              "value": "={{ $json.name || $json.symbol }}"
             },
             {
               "name": "from",
-              "value": "={{ $today.minus({ days: 1}).toFormat('yyyy-MM-dd') }}"
+              "value": "={{ $today.minus({ days: 1 }).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
             }
           ]
         },
@@ -70,7 +74,7 @@
         624
       ],
       "id": "7d796f94-8b95-4511-821c-c318fc55899b",
-      "name": "Article Search"
+      "name": "Search News by Company Name"
     },
     {
       "parameters": {
@@ -101,11 +105,11 @@
         624
       ],
       "id": "ba7bbc47-cb8b-4537-be02-3afa7f5af951",
-      "name": "Quote"
+      "name": "Fetch Quote"
     },
     {
       "parameters": {
-        "method": "=GET",
+        "method": "GET",
         "url": "https://api.twelvedata.com/time_series",
         "sendQuery": true,
         "queryParameters": {
@@ -141,7 +145,7 @@
     },
     {
       "parameters": {
-        "method": "=GET",
+        "method": "GET",
         "url": "https://api.twelvedata.com/time_series",
         "sendQuery": true,
         "queryParameters": {
@@ -184,7 +188,7 @@
         304
       ],
       "id": "3d19701a-b329-4acb-9b6f-6f8473744c6b",
-      "name": "Merger"
+      "name": "Merge Final Outputs"
     },
     {
       "parameters": {
@@ -198,7 +202,7 @@
         304
       ],
       "id": "9e1d0c88-eef9-4d41-a451-25ea77c3a5bb",
-      "name": "Aggregater"
+      "name": "Aggregate Final Output"
     },
     {
       "parameters": {
@@ -211,7 +215,7 @@
         640
       ],
       "id": "0f05c024-400c-45ac-8718-9a2c165a93f1",
-      "name": "Merged"
+      "name": "Merge News and Quote Data"
     },
     {
       "parameters": {
@@ -225,11 +229,11 @@
         640
       ],
       "id": "1244325d-ec1c-40c3-b1aa-af29cb0bcf87",
-      "name": "Aggregated"
+      "name": "Aggregate News and Quote Data"
     },
     {
       "parameters": {
-        "jsCode": "// Input: the full news API response (with 25 articles)\nconst data = $input.first().json;\n\n// Extract and clean the articles\nconst cleanedArticles = data.articles.map(article => ({\n    title: article.title || \"\",\n    description: article.description || \"\",\n    publishedAt: article.publishedAt || \"\",\n    content: article.content || \"\"\n}));\n\n// Return the cleaned result\nreturn [{\n    json: {\n        status: data.status,\n        totalResults: data.totalResults,\n        articles: cleanedArticles\n    }\n}];"
+        "jsCode": "const data = $input.first().json;\nconst articles = Array.isArray(data.articles) ? data.articles : [];\n\nconst cleanedArticles = articles.slice(0, 10).map(article => ({\n  title: article.title || \"\",\n  source: article.source?.name || \"\",\n  description: article.description || \"\",\n  publishedAt: article.publishedAt || \"\",\n  url: article.url || \"\",\n  content: article.content || \"\"\n}));\n\nreturn [{\n  json: {\n    status: data.status || \"unknown\",\n    totalResults: data.totalResults || 0,\n    articles: cleanedArticles\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -238,12 +242,12 @@
         624
       ],
       "id": "d0abbc62-8f95-4e61-a1bb-907071cbb746",
-      "name": "Article Filter"
+      "name": "Filter Company News"
     },
     {
       "parameters": {
         "inputSource": "jsonExample",
-        "jsonExample": " { \"symbol\": \"AAPL\" }"
+        "jsonExample": "{ \"symbol\": \"AAPL\" }"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -265,7 +269,7 @@
         "responses": {
           "values": [
             {
-              "content": "=You are a highly intelligent and accurate sentiment analyzer specializing in the financial markets. Analyze the sentiment of the provided text\n\n- Evaluate the immediate market reaction, recent news impact, and technical volatility.\n- Determine a sentiment category: \"Positive\", \"Neutral\", or \"Negative\".\n- Calculate a numerical score between -1 (extremely negative) and 1 (extremely positive).\n- Provide a concise rationale explaining the short-term sentiment (give a detailed response with appropriate headlines for major events).\nYour output must be exactly a JSON object. The value must be an object with three keys: \"category\", \"score\", and \"rationale\". Do not output any additional text.\n\nFor example, your output should look like:\n\n{\n  \"shortTermSentiment\": {\n    \"category\": \"Positive\",\n    \"score\": 0.7,\n    \"rationale\": \"....\"\n  }\n}\n\nNow, analyze the following text and produce your JSON output:\n{{ JSON.stringify($json.data[0].articles) }}"
+              "content": "=You are a financial-market sentiment analyzer. Analyze the provided quote/news data for short-term sentiment.\n\nConsider:\n- Immediate market reaction\n- Recent news impact\n- Technical volatility where available\n- Whether the information is material, speculative, or stale\n\nReturn exactly one JSON object and no additional text. Use this exact structure:\n\n{\n  \"shortTermSentiment\": {\n    \"category\": \"Positive | Neutral | Negative\",\n    \"score\": 0.0,\n    \"rationale\": \"Concise explanation with the most relevant factors.\"\n  }\n}\n\nThe score must be between -1 and 1.\n\nData to analyze:\n{{ JSON.stringify({ quote: (($json.data || [])[1] || {}), companyNews: ((($json.data || [])[0] || {}).articles || []), tickerNews: ((($json.data || [])[2] || {}).articles || []) }) }}"
             }
           ]
         },
@@ -279,7 +283,7 @@
         640
       ],
       "id": "b16c4be0-5200-4626-9583-a65ce4348857",
-      "name": "Message a model"
+      "name": "Generate News Sentiment"
     },
     {
       "parameters": {
@@ -297,7 +301,11 @@
             },
             {
               "name": "from",
-              "value": "={{ $today.minus({ days: 1}).toFormat('yyyy-MM-dd') }}"
+              "value": "={{ $today.minus({ days: 1 }).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
             }
           ]
         },
@@ -310,11 +318,11 @@
         832
       ],
       "id": "d129bcc6-b655-475f-9ced-f5aa05a8d1e9",
-      "name": "Article Search1"
+      "name": "Search News by Ticker"
     },
     {
       "parameters": {
-        "jsCode": "// Input: the full news API response (with 25 articles)\nconst data = $input.first().json;\n\n// Extract and clean the articles\nconst cleanedArticles = data.articles.map(article => ({\n    title: article.title || \"\",\n    description: article.description || \"\",\n    publishedAt: article.publishedAt || \"\",\n    content: article.content || \"\"\n}));\n\n// Return the cleaned result\nreturn [{\n    json: {\n        status: data.status,\n        totalResults: data.totalResults,\n        articles: cleanedArticles\n    }\n}];"
+        "jsCode": "const data = $input.first().json;\nconst articles = Array.isArray(data.articles) ? data.articles : [];\n\nconst cleanedArticles = articles.slice(0, 10).map(article => ({\n  title: article.title || \"\",\n  source: article.source?.name || \"\",\n  description: article.description || \"\",\n  publishedAt: article.publishedAt || \"\",\n  url: article.url || \"\",\n  content: article.content || \"\"\n}));\n\nreturn [{\n  json: {\n    status: data.status || \"unknown\",\n    totalResults: data.totalResults || 0,\n    articles: cleanedArticles\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -323,11 +331,11 @@
         832
       ],
       "id": "3e130d46-f2c6-44aa-90bd-2c9f2396ce53",
-      "name": "Article Filter1"
+      "name": "Filter Ticker News"
     },
     {
       "parameters": {
-        "method": "=GET",
+        "method": "GET",
         "url": "https://api.twelvedata.com/time_series",
         "sendQuery": true,
         "queryParameters": {
@@ -364,65 +372,65 @@
   ],
   "pinData": {},
   "connections": {
-    "Merge": {
+    "Merge Candle Data": {
       "main": [
         [
           {
-            "node": "Aggregate",
+            "node": "Aggregate Candle Data",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregate": {
+    "Aggregate Candle Data": {
       "main": [
         [
           {
-            "node": "CleanUp",
+            "node": "Clean Candle Data",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "CleanUp": {
+    "Clean Candle Data": {
       "main": [
         [
           {
-            "node": "Merger",
+            "node": "Merge Final Outputs",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Article Search": {
+    "Search News by Company Name": {
       "main": [
         [
           {
-            "node": "Article Filter",
+            "node": "Filter Company News",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Quote": {
+    "Fetch Quote": {
       "main": [
         [
           {
-            "node": "Article Search",
+            "node": "Search News by Company Name",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merged",
+            "node": "Merge News and Quote Data",
             "type": "main",
             "index": 1
           },
           {
-            "node": "Article Search1",
+            "node": "Search News by Ticker",
             "type": "main",
             "index": 0
           }
@@ -433,7 +441,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Merge Candle Data",
             "type": "main",
             "index": 0
           }
@@ -444,56 +452,56 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Merge Candle Data",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Merger": {
+    "Merge Final Outputs": {
       "main": [
         [
           {
-            "node": "Aggregater",
+            "node": "Aggregate Final Output",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregater": {
+    "Aggregate Final Output": {
       "main": [
         []
       ]
     },
-    "Merged": {
+    "Merge News and Quote Data": {
       "main": [
         [
           {
-            "node": "Aggregated",
+            "node": "Aggregate News and Quote Data",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregated": {
+    "Aggregate News and Quote Data": {
       "main": [
         [
           {
-            "node": "Message a model",
+            "node": "Generate News Sentiment",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Article Filter": {
+    "Filter Company News": {
       "main": [
         [
           {
-            "node": "Merged",
+            "node": "Merge News and Quote Data",
             "type": "main",
             "index": 0
           }
@@ -519,40 +527,40 @@
             "index": 0
           },
           {
-            "node": "Quote",
+            "node": "Fetch Quote",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Message a model": {
+    "Generate News Sentiment": {
       "main": [
         [
           {
-            "node": "Merger",
+            "node": "Merge Final Outputs",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Article Search1": {
+    "Search News by Ticker": {
       "main": [
         [
           {
-            "node": "Article Filter1",
+            "node": "Filter Ticker News",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Article Filter1": {
+    "Filter Ticker News": {
       "main": [
         [
           {
-            "node": "Merged",
+            "node": "Merge News and Quote Data",
             "type": "main",
             "index": 2
           }
@@ -563,7 +571,7 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "Merge Candle Data",
             "type": "main",
             "index": 2
           }
@@ -571,19 +579,13 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": true,
+    "availableInMCP": false,
     "timeSavedMode": "fixed",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "25bb5b72-cc6a-4d89-bb0f-1ef99780eb68",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "0557242a48d6232bb68466d7a9fdc2d50d71170d4ba97a93181aabcfa3d08593"
-  },
-  "id": "it8idqhsuJsPAO8N",
   "tags": []
 }
