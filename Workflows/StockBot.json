@@ -1,0 +1,180 @@
+{
+  "name": "StockBot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a820ccb8-d812-4eb8-ae8c-17ef30c5883a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        208
+      ],
+      "id": "3b7e719b-128f-4a1c-94a1-059c99b1d677",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "You have access to a tool called `analyze_stock`.\n\nyou don't have to use it every time. When the user asks about a stock, company, or investment decision:\n- You SHOULD call the tool when the user asks for an analysis of a stock symbol or company.\n- Do NOT describe internal tool mechanics to the user.\n- Call the tool and then use the returned data to answer naturally.\n\nIf the request is unrelated, respond normally. Make sure to use the company symbol like \"AAPL\", \"NVDA\", \"ORCL\", etc. when sending tool inputs.",
+        "workflowId": {
+          "__rl": true,
+          "value": "it8idqhsuJsPAO8N",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/it8idqhsuJsPAO8N",
+          "cachedResultName": "analyze_stock"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "symbol": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbol', ` \"Stock ticker symbol (e.g. AAPL)\"`, 'string') }}"
+          },
+          "matchingColumns": [
+            "symbol"
+          ],
+          "schema": [
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        224
+      ],
+      "id": "beb71b2d-435f-44e4-835a-f27b5b0bdbfe",
+      "name": "analyze_stock"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        208
+      ],
+      "id": "7a3e37f9-c152-4604-b56b-501ed9e1e115",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "availableInChat": true,
+        "agentIcon": {
+          "type": "emoji",
+          "value": "💲"
+        },
+        "agentName": "StockBot",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0aa0a2af-c4dd-4ee4-8dde-0739af7b1271",
+      "name": "When chat message received",
+      "webhookId": "86f45f3e-7325-4b67-982c-90272ff73d78"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "analyze_stock": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "eaed4c6a-baa5-4ee5-8c67-367e8a918802",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0557242a48d6232bb68466d7a9fdc2d50d71170d4ba97a93181aabcfa3d08593"
+  },
+  "id": "lUoblDZeLfYJutMh",
+  "tags": []
+}

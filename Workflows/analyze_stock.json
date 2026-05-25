@@ -1,0 +1,589 @@
+{
+  "name": "analyze_stock",
+  "nodes": [
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        464,
+        128
+      ],
+      "id": "98ec81ba-fabd-4fab-8c61-8a0fa844b7e5",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        672,
+        128
+      ],
+      "id": "139b3edd-9329-48e5-ac5e-2847fc6eafa5",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = items[0].json;\n\n// extract datasets\nconst data1h = root.data[0];\n// 8 hours\nconst data2h = root.data[1];\n// 1 day\nconst data4h = root.data[2];\n// 1 week\n\n//standardize format\nfunction normalize(values){\n  return values\n   .map(v => ({\n     time: new Date(v.datetime),\n     open: parseFloat(v.open),\n     high: parseFloat(v.high),\n     low: parseFloat(v.low),\n     close: parseFloat(v.close),\n     volume: parseFloat(v.volume),\n   }))\n  .sort((a, b) => a.time - b.time);\n}\n\nreturn [\n  {\n    json: {\n      ticker: data1h.meta?.symbol,\n      candles1h: normalize(data1h.values),\n      candles2h: normalize(data2h.values),\n      candles4h: normalize(data4h.values)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        128
+      ],
+      "id": "9966556e-e37a-4b58-9d9b-8b3be5b2ea59",
+      "name": "CleanUp"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "={{ $env.NEWSAPI_KEY }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $today.minus({ days: 1}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        624
+      ],
+      "id": "7d796f94-8b95-4511-821c-c318fc55899b",
+      "name": "Article Search"
+    },
+    {
+      "parameters": {
+        "url": "https://api.twelvedata.com/quote",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "interval",
+              "value": "1day"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.TWELVEDATA_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        48,
+        624
+      ],
+      "id": "ba7bbc47-cb8b-4537-be02-3afa7f5af951",
+      "name": "Quote"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "https://api.twelvedata.com/time_series",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "interval",
+              "value": "1h"
+            },
+            {
+              "name": "outputsize",
+              "value": "10"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.TWELVEDATA_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "003a9b55-3330-4eb0-b9a6-70900efe0a77",
+      "name": "Candles 1h"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "https://api.twelvedata.com/time_series",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "interval",
+              "value": "2h"
+            },
+            {
+              "name": "outputsize",
+              "value": "10"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.TWELVEDATA_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        144
+      ],
+      "id": "95600a9d-139d-46ac-97fb-4957a5ba3e8a",
+      "name": "Candles 2h"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        304
+      ],
+      "id": "3d19701a-b329-4acb-9b6f-6f8473744c6b",
+      "name": "Merger"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        304
+      ],
+      "id": "9e1d0c88-eef9-4d41-a451-25ea77c3a5bb",
+      "name": "Aggregater"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        560,
+        640
+      ],
+      "id": "0f05c024-400c-45ac-8718-9a2c165a93f1",
+      "name": "Merged"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        704,
+        640
+      ],
+      "id": "1244325d-ec1c-40c3-b1aa-af29cb0bcf87",
+      "name": "Aggregated"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: the full news API response (with 25 articles)\nconst data = $input.first().json;\n\n// Extract and clean the articles\nconst cleanedArticles = data.articles.map(article => ({\n    title: article.title || \"\",\n    description: article.description || \"\",\n    publishedAt: article.publishedAt || \"\",\n    content: article.content || \"\"\n}));\n\n// Return the cleaned result\nreturn [{\n    json: {\n        status: data.status,\n        totalResults: data.totalResults,\n        articles: cleanedArticles\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        624
+      ],
+      "id": "d0abbc62-8f95-4e61-a1bb-907071cbb746",
+      "name": "Article Filter"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": " { \"symbol\": \"AAPL\" }"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        144
+      ],
+      "id": "7176ad33-cc69-4bdd-bdda-61e610ac3c2f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a highly intelligent and accurate sentiment analyzer specializing in the financial markets. Analyze the sentiment of the provided text\n\n- Evaluate the immediate market reaction, recent news impact, and technical volatility.\n- Determine a sentiment category: \"Positive\", \"Neutral\", or \"Negative\".\n- Calculate a numerical score between -1 (extremely negative) and 1 (extremely positive).\n- Provide a concise rationale explaining the short-term sentiment (give a detailed response with appropriate headlines for major events).\nYour output must be exactly a JSON object. The value must be an object with three keys: \"category\", \"score\", and \"rationale\". Do not output any additional text.\n\nFor example, your output should look like:\n\n{\n  \"shortTermSentiment\": {\n    \"category\": \"Positive\",\n    \"score\": 0.7,\n    \"rationale\": \"....\"\n  }\n}\n\nNow, analyze the following text and produce your JSON output:\n{{ JSON.stringify($json.data[0].articles) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        640
+      ],
+      "id": "b16c4be0-5200-4626-9583-a65ce4348857",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "={{ $env.NEWSAPI_KEY }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ $today.minus({ days: 1}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        832
+      ],
+      "id": "d129bcc6-b655-475f-9ced-f5aa05a8d1e9",
+      "name": "Article Search1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: the full news API response (with 25 articles)\nconst data = $input.first().json;\n\n// Extract and clean the articles\nconst cleanedArticles = data.articles.map(article => ({\n    title: article.title || \"\",\n    description: article.description || \"\",\n    publishedAt: article.publishedAt || \"\",\n    content: article.content || \"\"\n}));\n\n// Return the cleaned result\nreturn [{\n    json: {\n        status: data.status,\n        totalResults: data.totalResults,\n        articles: cleanedArticles\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        832
+      ],
+      "id": "3e130d46-f2c6-44aa-90bd-2c9f2396ce53",
+      "name": "Article Filter1"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "https://api.twelvedata.com/time_series",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "interval",
+              "value": "8h"
+            },
+            {
+              "name": "outputsize",
+              "value": "10"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.TWELVEDATA_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        304
+      ],
+      "id": "46f059ab-b172-407e-b8e6-574a7f74b7e5",
+      "name": "Candles 8h"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "CleanUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CleanUp": {
+      "main": [
+        [
+          {
+            "node": "Merger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Article Search": {
+      "main": [
+        [
+          {
+            "node": "Article Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote": {
+      "main": [
+        [
+          {
+            "node": "Article Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merged",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Article Search1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candles 1h": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candles 2h": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merger": {
+      "main": [
+        [
+          {
+            "node": "Aggregater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregater": {
+      "main": [
+        []
+      ]
+    },
+    "Merged": {
+      "main": [
+        [
+          {
+            "node": "Aggregated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregated": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Article Filter": {
+      "main": [
+        [
+          {
+            "node": "Merged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Candles 1h",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Candles 2h",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Candles 8h",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merger",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Article Search1": {
+      "main": [
+        [
+          {
+            "node": "Article Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Article Filter1": {
+      "main": [
+        [
+          {
+            "node": "Merged",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Candles 8h": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "25bb5b72-cc6a-4d89-bb0f-1ef99780eb68",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0557242a48d6232bb68466d7a9fdc2d50d71170d4ba97a93181aabcfa3d08593"
+  },
+  "id": "it8idqhsuJsPAO8N",
+  "tags": []
+}
