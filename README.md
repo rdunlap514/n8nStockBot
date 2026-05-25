@@ -9,6 +9,10 @@ Author: Ryan Dunlap
 License: MIT
 
 ---
+ 
+![StockBot demo — GIF](assets/Demo.gif)
+
+---
 
 ## Contents
 - Overview
@@ -145,6 +149,10 @@ LLM configuration:
 
 Rate limits and retries:
 - Twelve Data and NewsAPI enforce rate limits. Add backoff/retry logic on HTTP nodes where appropriate.
+
+---
+
+[![StockBot demo — PNG](assets/Demo.png)](assets/Demo.gif)
 
 ---
 
