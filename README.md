@@ -109,7 +109,7 @@ Using n8n Credentials is safer than hardcoding secrets.
   - HTTP / Generic credentials (or custom credentials for Twelve Data / NewsAPI)
 
 4) Import the workflows
-- n8n → Workflows → Import → Choose file → select:
+- n8n → Workflows → Create Workflow → Import from File → Choose file → select:
   - workflows/StockBot.json
   - workflows/analyze_stock.json
 - After import, open each workflow and assign the appropriate credentials to:
