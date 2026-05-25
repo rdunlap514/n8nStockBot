@@ -1,16 +1,7 @@
 
 # n8n StockBot — AI-Powered Short‑Term Sentiment Workflows
 
-Repository: https://github.com/rdunlap514/n8nStockBot
-
-A compact, portfolio-ready set of n8n workflows that implement an AI assistant for short-term stock sentiment. The flows fetch market data (Twelve Data), aggregate recent news (NewsAPI), and orchestrate an LLM to produce structured short-horizon sentiment summaries. This project showcases API integration, data cleaning, LLM chaining, and practical automation patterns in n8n.
-
-Author: Ryan Dunlap  
-License: MIT
-
----
-
-![StockBot demo — PNG](assets/Demo.png) 
+A compact set of n8n workflows that implement an AI assistant for short-term stock sentiment. The flows fetch market data (Twelve Data), aggregate recent news (NewsAPI), and orchestrate an LLM to produce structured short-horizon sentiment summaries. This project showcases API integration, data cleaning, LLM chaining, and practical automation patterns in n8n. This project is primarily a proof of concept, seeing how an LLM would utilize market data to make calls and give market advise. This sepcific version of the bot runs on OpenAi's ChatGPT but it is not comple to swap models to the users prefered LLM, Local Ollama models (tested on Qwen3:14B locally on 3060 12gb) can provide good market analysis, this project was switched to OpenAi's models to provide faster and more coherent responses. 
 
 ---
 
@@ -30,6 +21,9 @@ License: MIT
 
 ---
 
+![StockBot demo — PNG](assets/Demo.png) 
+
+---
 ## Important disclaimer — Not financial advice
 This project is provided for demonstration and educational purposes only. It is NOT financial, investment, tax, or legal advice. AI outputs may be incomplete, incorrect, or out of date. Do not make real investment decisions based solely on these workflows. Always do your own research and consult a licensed professional.  
 If you expose these tools to other users, display a visible notice that the assistant is not a licensed financial advisor.
@@ -45,8 +39,8 @@ If you expose these tools to other users, display a visible notice that the assi
 
 ---
 
-## How it works (architecture)
-At a high level:
+## How it works
+At a basic level:
 1. Input: User provides a stock ticker (e.g., AAPL).
 2. Market data: Fetch recent time-series data from Twelve Data.
 3. News: Pull the latest relevant articles via NewsAPI.
@@ -54,9 +48,11 @@ At a high level:
 5. LLM analysis: Summarize near-term sentiment and rationale in a structured format (JSON).
 6. Output: Return a concise, explainable assessment suitable for dashboards or chat responses.
 
+The most practical use of this project is as a stock market chatbot, if you're already intrested in stocks, it can be a useful consultant/tool to help quickly gather information and sentiment of a certain stock.  Can be provided stock tickers and provide surface level analysis or you could take advantage of a bigger Ai model to turn it into an LLM chatbot with more market insight than a base LLM running on its own.
+
 Workflows:
 - StockBot.json — Orchestrates the conversation and tool invocation.
-- analyze_stock.json — Fetches data, prepares context, and performs LLM-based sentiment analysis.
+- analyze_stock.json — Agent tool used to fetch data, prepare context, and perform LLM-based sentiment analysis.  Can be built into a stand-alone Ai agent but this flow worked best for my goals of a stock chat bot
 
 ---
 
