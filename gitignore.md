@@ -1,8 +1,7 @@
-
-# Recommended .gitignore for this repo
-
 # local env files
 .env
+.env.*
+!.env.example
 
 # OS files
 .DS_Store
@@ -15,5 +14,11 @@ Thumbs.db
 # Node
 node_modules/
 
-# n8n exports / temp
+# Logs/temp
 *.log
+tmp/
+temp/
+
+# n8n local data / exports that may include secrets
+.n8n/
+credentials.json
