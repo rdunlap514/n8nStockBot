@@ -1,6 +1,6 @@
 
 # .env.example
-# Copy this file to `.env` and fill in the real API keys.
+# Copy the Required API keys to `.env` and fill in the real API keys.
 
 # Required API keys
 OPENAI_API_KEY=your_openai_api_key
