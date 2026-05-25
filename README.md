@@ -10,7 +10,7 @@ License: MIT
 
 ---
 
-[![StockBot demo — PNG](assets/Demo.png)] 
+![StockBot demo — PNG](assets/Demo.png) 
 
 ---
 
