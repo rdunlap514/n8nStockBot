@@ -31,18 +31,17 @@
     },
     {
       "parameters": {
-        "description": "You have access to a tool called `analyze_stock`.\n\nyou don't have to use it every time. When the user asks about a stock, company, or investment decision:\n- You SHOULD call the tool when the user asks for an analysis of a stock symbol or company.\n- Do NOT describe internal tool mechanics to the user.\n- Call the tool and then use the returned data to answer naturally.\n\nIf the request is unrelated, respond normally. Make sure to use the company symbol like \"AAPL\", \"NVDA\", \"ORCL\", etc. when sending tool inputs.",
+        "description": "You have access to a tool called `analyze_stock`.\n\nUse this tool when the user asks about a stock, public company, ticker symbol, or short-term market sentiment. Do not describe internal tool mechanics to the user.\n\nWhen calling the tool, provide a stock ticker symbol such as AAPL, NVDA, MSFT, TSLA, or ORCL.\n\nUse the returned data to answer naturally. Keep responses educational and avoid presenting the output as financial advice.",
         "workflowId": {
           "__rl": true,
-          "value": "it8idqhsuJsPAO8N",
+          "value": "",
           "mode": "list",
-          "cachedResultUrl": "/workflow/it8idqhsuJsPAO8N",
-          "cachedResultName": "analyze_stock"
+          "cachedResultName": "Select analyze_stock after import"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "symbol": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbol', ` \"Stock ticker symbol (e.g. AAPL)\"`, 'string') }}"
+            "symbol": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('symbol', 'Stock ticker symbol, for example AAPL, NVDA, MSFT, TSLA, or ORCL', 'string') }}"
           },
           "matchingColumns": [
             "symbol"
@@ -109,8 +108,7 @@
         0
       ],
       "id": "0aa0a2af-c4dd-4ee4-8dde-0739af7b1271",
-      "name": "When chat message received",
-      "webhookId": "86f45f3e-7325-4b67-982c-90272ff73d78"
+      "name": "When chat message received"
     }
   ],
   "pinData": {},
@@ -165,16 +163,10 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "eaed4c6a-baa5-4ee5-8c67-367e8a918802",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "0557242a48d6232bb68466d7a9fdc2d50d71170d4ba97a93181aabcfa3d08593"
-  },
-  "id": "lUoblDZeLfYJutMh",
   "tags": []
 }
