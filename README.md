@@ -16,9 +16,11 @@ Author: Ryan Dunlap
 - .gitignore
 - LICENSE (MIT)
 - tests/
-  - example_input.json (suggested)
+  - example_input.json
+  - example_output.json
 - assets/
-  - demo.gif (optional)
+  - Demo.gif
+  - Demo.png
 
 ---
 
