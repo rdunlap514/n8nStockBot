@@ -166,10 +166,7 @@ Demos:
 
 ---
 
-## Production recommendations
-
-Credentials & secrets
-- Never commit API keys. Prefer n8n Credentials or environment variables referenced by expressions.
+## Production recommendations - This is a proof of conecpt and can be improved upon
 
 Error handling & validation
 - Add IF nodes to check HTTP status codes and payloads.
@@ -182,17 +179,6 @@ Cost and performance
 
 Modularity
 - Split logic into smaller flows for clarity and reuse (e.g., get_market_data, get_news, analyze_sentiment).
-
-Testing and demos
-- Use tests/example_input.json and tests/example_output.json to document expected shapes.
-- Keep an up-to-date demo GIF for reviewers.
-
-Observability
-- Log runs and failures to a sheet/DB.
-- Add Slack/email notifications on errors.
-
-Sanitization
-- Ensure exports remove webhookId/instance-specific metadata where possible for clean imports.
 
 ---
 
