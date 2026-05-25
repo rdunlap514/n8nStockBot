@@ -76,7 +76,7 @@ Workflows:
 ## Prerequisites
 - n8n (self-hosted or n8n Cloud). Recommended: n8n ≥ 0.230.0.
 - API keys / accounts:
-  - LLM (OpenAI, Gemini, Grock, Ollama, etc.)
+  - LLM (OpenAI, Gemini, Grok, Ollama, etc.)
   - Twelve Data
   - NewsAPI
 - Familiarity with importing workflows into n8n and assigning credentials.
