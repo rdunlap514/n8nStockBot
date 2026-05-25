@@ -9,8 +9,8 @@ Author: Ryan Dunlap
 License: MIT
 
 ---
- 
-![StockBot demo — GIF](assets/Demo.gif)
+
+[![StockBot demo — PNG](assets/Demo.png)] 
 
 ---
 
@@ -73,15 +73,14 @@ Workflows:
 - .env.example
 - .gitignore
 - LICENSE (MIT)
-- README.md
-- READMEPRO (this file)
+- README.md (this file)
 
 ---
 
 ## Prerequisites
 - n8n (self-hosted or n8n Cloud). Recommended: n8n ≥ 0.230.0.
 - API keys / accounts:
-  - OpenAI (or another LLM provider supported by the LangChain nodes)
+  - LLM (OpenAI, Gemini, Grock, Ollama, etc.)
   - Twelve Data
   - NewsAPI
 - Familiarity with importing workflows into n8n and assigning credentials.
@@ -96,7 +95,7 @@ git clone https://github.com/rdunlap514/n8nStockBot.git
 cd n8nStockBot
 ```
 
-2) (Optional) Create a .env file  
+(Optional) Create a .env file  
 Copy .env.example to .env and add your keys if you plan to reference env vars within n8n:
 ```
 cp .env.example .env
@@ -106,13 +105,13 @@ cp .env.example .env
 # NEWSAPI_KEY=...
 ```
 
-3) Create credentials in n8n (recommended)  
+2) Create credentials in n8n (recommended)  
 Using n8n Credentials is safer than hardcoding secrets.
 - In n8n: Credentials → Create
   - OpenAI / OpenAI API
   - HTTP / Generic credentials (or custom credentials for Twelve Data / NewsAPI)
 
-4) Import the workflows
+3) Import the workflows
 - n8n → Workflows → Create Workflow → Import from File → Choose file → select:
   - workflows/StockBot.json
   - workflows/analyze_stock.json
@@ -120,15 +119,19 @@ Using n8n Credentials is safer than hardcoding secrets.
   - LLM nodes (OpenAI/LangChain)
   - HTTP Request nodes (Twelve Data, NewsAPI)
 
-5) Re-link the tool workflow
+4) Re-link the tool workflow
 - Open the StockBot workflow.
 - Locate the node that calls the analyze_stock workflow.
 - Use the workflow dropdown to select your imported analyze_stock workflow.  
 This prevents issues with stale workflow IDs after import.
 
-6) Test a run
+5) Test a run
 - In n8n, run StockBot manually and provide a test ticker (e.g., AAPL).
 - Review the execution data to confirm market/news fetches and the LLM summary.
+
+---
+
+![StockBot demo — GIF](assets/Demo.gif)
 
 ---
 
@@ -149,10 +152,6 @@ LLM configuration:
 
 Rate limits and retries:
 - Twelve Data and NewsAPI enforce rate limits. Add backoff/retry logic on HTTP nodes where appropriate.
-
----
-
-[![StockBot demo — PNG](assets/Demo.png)](assets/Demo.gif)
 
 ---
 
