@@ -1,164 +1,211 @@
 
-# StockBot AI Workflows (n8n)
+# n8n StockBot — AI-Powered Short‑Term Sentiment Workflows
 
-A compact, portfolio-ready set of n8n workflows that demonstrate an AI-powered short-term stock sentiment assistant. These workflows fetch market data (Twelve Data), pull recent news (NewsAPI), and use an LLM to produce structured short-term sentiment summaries. Designed to showcase integration, data cleaning, LLM orchestration, and practical automation in n8n.
+Repository: https://github.com/rdunlap514/n8nStockBot
 
-Author: Ryan Dunlap
+A compact, portfolio-ready set of n8n workflows that implement an AI assistant for short-term stock sentiment. The flows fetch market data (Twelve Data), aggregate recent news (NewsAPI), and orchestrate an LLM to produce structured short-horizon sentiment summaries. This project showcases API integration, data cleaning, LLM chaining, and practical automation patterns in n8n.
+
+Author: Ryan Dunlap  
+License: MIT
 
 ---
 
 ## Contents
+- Overview
+- Features
+- How it works (architecture)
+- Directory layout
+- Prerequisites
+- Quick start
+- Configuration
+- Usage
+- Production recommendations
+- Security and cost
+- Troubleshooting
+- License
+
+---
+
+## Important disclaimer — Not financial advice
+This project is provided for demonstration and educational purposes only. It is NOT financial, investment, tax, or legal advice. AI outputs may be incomplete, incorrect, or out of date. Do not make real investment decisions based solely on these workflows. Always do your own research and consult a licensed professional.  
+If you expose these tools to other users, display a visible notice that the assistant is not a licensed financial advisor.
+
+---
+
+## Features
+- Multi-API integration in n8n (Twelve Data, NewsAPI).
+- LLM-orchestrated analysis using LangChain/OpenAI nodes.
+- Basic data cleaning and normalization of time series and article content.
+- Chat-style agent that invokes a tool workflow and maintains short-term context.
+- Portfolio-ready hygiene: sanitized exports, .env usage, and clear setup guidance.
+
+---
+
+## How it works (architecture)
+At a high level:
+1. Input: User provides a stock ticker (e.g., AAPL).
+2. Market data: Fetch recent time-series data from Twelve Data.
+3. News: Pull the latest relevant articles via NewsAPI.
+4. Processing: Normalize, trim, and prepare inputs for the LLM.
+5. LLM analysis: Summarize near-term sentiment and rationale in a structured format (JSON).
+6. Output: Return a concise, explainable assessment suitable for dashboards or chat responses.
+
+Workflows:
+- StockBot.json — Orchestrates the conversation and tool invocation.
+- analyze_stock.json — Fetches data, prepares context, and performs LLM-based sentiment analysis.
+
+---
+
+## Directory layout
 - workflows/
   - StockBot.json
   - analyze_stock.json
-- .env.example
-- README.md
-- .gitignore
-- LICENSE (MIT)
 - tests/
   - example_input.json
   - example_output.json
 - assets/
   - Demo.gif
   - Demo.png
-
----
-
-## Important disclaimer — Not financial advice
-This project is for demonstration and educational purposes only. It is NOT financial, investment, tax, or legal advice. The AI outputs may be incomplete, incorrect, or out of date. Do not make real investment decisions based solely on these workflows or their outputs. Always do your own research and consult a licensed professional.
-
-If you expose these tools to other users, display a visible reminder that the assistant is not a licensed financial advisor.
-
----
-
-## What this repo demonstrates
-- Integrating multiple APIs (Twelve Data, NewsAPI) in n8n.
-- Orchestrating an LLM-based analysis pipeline (LangChain / OpenAI nodes).
-- Data cleaning/normalization of time series and article content.
-- A chat agent that can call a tool workflow and keep short-term memory.
-- Basic production practices: sanitized exports, .env usage, README guidance.
+- .env.example
+- .gitignore
+- LICENSE (MIT)
+- README.md
+- READMEPRO (this file)
 
 ---
 
 ## Prerequisites
-- n8n (self-hosted or n8n cloud). Recommended: n8n >= 0.230.0.
+- n8n (self-hosted or n8n Cloud). Recommended: n8n ≥ 0.230.0.
 - API keys / accounts:
-  - OpenAI (or another LLM provider supported by LangChain nodes)
+  - OpenAI (or another LLM provider supported by the LangChain nodes)
   - Twelve Data
   - NewsAPI
-- Familiarity with importing workflows into n8n and adding credentials.
+- Familiarity with importing workflows into n8n and assigning credentials.
 
 ---
 
-## Quick setup & import
+## Quick start
 
-1. Clone repository
-   ```
-   git clone <your-repo-url>
-   cd stock-ai-workflows
-   ```
-
-2. Create `.env` (optional)
-   - Copy `.env.example` to `.env` and fill real keys if you want to use environment variable expressions:
-     ```
-     cp .env.example .env
-     # edit .env and add:
-     # OPENAI_API_KEY=...
-     # TWELVEDATA_API_KEY=...
-     # NEWSAPI_KEY=...
-     ```
-
-3. Recommended: create credentials in n8n (safer)
-   - Open n8n → Credentials → Create:
-     - OpenAI / OpenAI API
-     - HTTP / Generic credentials (or custom credentials for Twelve Data / NewsAPI)
-   - Using n8n Credentials is preferred for production.
-
-4. Import workflows
-   - n8n → Workflows → Import → Choose file → select `workflows/StockBot.json` and `workflows/analyze_stock.json`.
-   - After import, open each workflow and assign the appropriate credentials to nodes (LLM and HTTP Request nodes).
-
-5. Re-link the tool workflow (StockBot → analyze_stock)
-   - Open the StockBot workflow → open the tool node that calls `analyze_stock` → use the workflow dropdown to select your imported `analyze_stock` workflow. This avoids stale workflow IDs.
-
----
-
-## Quick test
-
-- analyze_stock (manual)
-  - Open `analyze_stock` in editor → click Execute Workflow trigger and provide this example input:
-    ```json
-    {
-      "symbol": "AAPL",
-      "name": "Apple"
-    }
-    ```
-  - Expected steps: Candles 1h/2h/8h (Twelve Data) → Quote → News search (NewsAPI) → article cleanup → LLM sentiment analysis.
-
-- StockBot (chat)
-  - Test the chat trigger (editor or configured chat webhook):
-    ```
-    "Analyze AAPL for short-term sentiment and summarize the latest news."
-    ```
-  - The agent should call `analyze_stock` and reply with a natural language summary derived from the tool output.
-
-Example expected LLM output structure:
-```json
-{
-  "shortTermSentiment": {
-    "category": "Positive",
-    "score": 0.68,
-    "rationale": "Multiple articles report better-than-expected earnings and increased guidance; market reaction appears favorable..."
-  }
-}
+1) Clone the repository
+```
+git clone https://github.com/rdunlap514/n8nStockBot.git
+cd n8nStockBot
 ```
 
+2) (Optional) Create a .env file  
+Copy .env.example to .env and add your keys if you plan to reference env vars within n8n:
+```
+cp .env.example .env
+# then edit .env and add:
+# OPENAI_API_KEY=...
+# TWELVEDATA_API_KEY=...
+# NEWSAPI_KEY=...
+```
+
+3) Create credentials in n8n (recommended)  
+Using n8n Credentials is safer than hardcoding secrets.
+- In n8n: Credentials → Create
+  - OpenAI / OpenAI API
+  - HTTP / Generic credentials (or custom credentials for Twelve Data / NewsAPI)
+
+4) Import the workflows
+- n8n → Workflows → Import → Choose file → select:
+  - workflows/StockBot.json
+  - workflows/analyze_stock.json
+- After import, open each workflow and assign the appropriate credentials to:
+  - LLM nodes (OpenAI/LangChain)
+  - HTTP Request nodes (Twelve Data, NewsAPI)
+
+5) Re-link the tool workflow
+- Open the StockBot workflow.
+- Locate the node that calls the analyze_stock workflow.
+- Use the workflow dropdown to select your imported analyze_stock workflow.  
+This prevents issues with stale workflow IDs after import.
+
+6) Test a run
+- In n8n, run StockBot manually and provide a test ticker (e.g., AAPL).
+- Review the execution data to confirm market/news fetches and the LLM summary.
+
 ---
 
-## Recommended improvements (for production-readiness / portfolio polish)
-- Credentials & secrets
-  - Ensure no API keys in repo. Use `.env` + `.gitignore` or n8n Credentials.
-- Error handling & validation
-  - Add IF nodes to verify HTTP responses, and Code nodes to validate LLM JSON.
-  - Implement retry/backoff for transient API failures.
-- Limit LLM input size
-  - Trim article content and cap the number of articles to control cost and latency.
-- Modularize workflows
-  - Split into smaller flows: `get_market_data`, `get_news`, `analyze_sentiment`.
-- Tests & demos
-  - Add `tests/example_input.json` and `tests/expected_output.json`.
-  - Add an assets/demo.gif or demo.png showing a run.
-- Observability
-  - Log runs and failures (Google Sheets/Airtable/DB) and add notification on errors (Slack/email).
+## Configuration
+
+Environment variables (optional, for reference within n8n or your runtime):
+- OPENAI_API_KEY
+- TWELVEDATA_API_KEY
+- NEWSAPI_KEY
+
+n8n credentials (preferred in production):
+- Map each node to the appropriate credential entry created in n8n.
+- Do not commit real keys. Ensure .env and other secret sources are excluded by .gitignore.
+
+LLM configuration:
+- Use the OpenAI node or LangChain nodes for your chosen provider.
+- Consider temperature and token limits appropriate to cost and latency targets.
+
+Rate limits and retries:
+- Twelve Data and NewsAPI enforce rate limits. Add backoff/retry logic on HTTP nodes where appropriate.
 
 ---
 
-## Security & cost considerations
-- Do NOT commit real API keys. Add `.env` to `.gitignore`.
-- Truncate or summarize article text before sending to LLMs to reduce cost.
-- Watch API rate limits for Twelve Data and NewsAPI — add backoff/retry logic.
-- Mask or remove proprietary/personal data before sending to third-party LLMs.
+## Usage
+
+- Chat-driven: Interact with the StockBot workflow to request a ticker analysis.
+- Tool invocation: The agent calls analyze_stock to fetch data and produce the structured summary.
+- Output: A short-term sentiment assessment with rationale in JSON-like structure suitable for downstream consumption.
+
+Demos:
+- See assets/Demo.gif or assets/Demo.png for a quick visual of the flow.
+
+---
+
+## Production recommendations
+
+Credentials & secrets
+- Never commit API keys. Prefer n8n Credentials or environment variables referenced by expressions.
+
+Error handling & validation
+- Add IF nodes to check HTTP status codes and payloads.
+- Validate/parse LLM JSON in a Code node; add a retry with a stricter prompt on parse failure.
+- Implement retry/backoff for transient API failures.
+
+Cost and performance
+- Limit article count and trim/summarize article bodies before the LLM step.
+- Cap token usage and control temperature for predictability.
+
+Modularity
+- Split logic into smaller flows for clarity and reuse (e.g., get_market_data, get_news, analyze_sentiment).
+
+Testing and demos
+- Use tests/example_input.json and tests/example_output.json to document expected shapes.
+- Keep an up-to-date demo GIF for reviewers.
+
+Observability
+- Log runs and failures to a sheet/DB.
+- Add Slack/email notifications on errors.
+
+Sanitization
+- Ensure exports remove webhookId/instance-specific metadata where possible for clean imports.
+
+---
+
+## Security and cost
+- Do not commit real API keys; keep .env in .gitignore.
+- Carefully review any proprietary or personal data before sending to third-party LLMs.
+- Monitor and respect API rate limits (Twelve Data, NewsAPI) and add exponential backoff as needed.
+- Trim long texts before LLM calls to control spend.
 
 ---
 
 ## Troubleshooting
-- Agent doesn’t call tool:
-  - Re-open the tool node in StockBot and re-select the `analyze_stock` workflow.
-- HTTP requests failing:
-  - Verify API keys and rate limits. Inspect raw responses in n8n execution logs.
-- LLM returns malformed JSON:
-  - Tighten the prompt; add a post-LLM Code node that attempts to parse/validate and retries with a stricter prompt if needed.
+- Agent doesn’t call the tool
+  - Re-open the tool node in StockBot and re-select the analyze_stock workflow.
+- HTTP requests fail
+  - Verify API keys, quotas, and rate limits. Inspect raw responses in n8n execution logs.
+- LLM returns malformed JSON
+  - Tighten the prompt. Add a post-LLM parsing/validation step with a retry path.
 
 ---
 
-## License & attribution
-- License: MIT (see LICENSE file).  
-
----
-
-## Want me to do one of these for you?
-- Add post-LLM validation code nodes into `analyze_stock` and provide the updated workflow JSON for import.
-- Sanitize webhookId / instanceId metadata to make imports even cleaner.
-- Create `tests/example_input.json` and a demo GIF placeholder.
-
-Tell me which and I’ll add it to the repo.
+## License
+MIT — see LICENSE for details.
