@@ -140,7 +140,6 @@ Environment variables (optional, for reference within n8n or your runtime):
 
 n8n credentials (preferred in production):
 - Map each node to the appropriate credential entry created in n8n.
-- Do not commit real keys. Ensure .env and other secret sources are excluded by .gitignore.
 
 LLM configuration:
 - Use the OpenAI node or LangChain nodes for your chosen provider.
