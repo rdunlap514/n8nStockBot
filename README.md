@@ -178,7 +178,6 @@ Modularity
 ---
 
 ## Security and cost
-- Do not commit real API keys; keep .env in .gitignore.
 - Carefully review any proprietary or personal data before sending to third-party LLMs.
 - Monitor and respect API rate limits (Twelve Data, NewsAPI) and add exponential backoff as needed.
 - Trim long texts before LLM calls to control spend.
