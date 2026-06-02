@@ -1,7 +1,7 @@
 
 # n8n StockBot — AI-Powered Short‑Term Sentiment Workflows
 
-A compact set of n8n workflows that implement an AI assistant for short-term stock sentiment. The flows fetch market data (Twelve Data), aggregate recent news (NewsAPI), and orchestrate an LLM to produce structured short-horizon sentiment summaries. This project showcases API integration, data cleaning, LLM chaining, and practical automation patterns in n8n. This project is primarily a proof of concept, seeing how an LLM would utilize market data to explore how an LLM can summarize market/news sentiment for educational purposes. This sepcific version of the bot runs on OpenAi's ChatGPT but it is not comple to swap models to the users prefered LLM, Local Ollama models can provide good market analysis, this project was switched to OpenAi's models to provide faster and more coherent responses. 
+A compact set of n8n workflows that implement an AI assistant for short-term stock sentiment. The flows fetch market data (Twelve Data), aggregate recent news (NewsAPI), and orchestrate an LLM to produce structured short-horizon sentiment summaries. This project showcases API integration, data cleaning, LLM chaining, and practical automation patterns in n8n. This project is primarily a proof of concept, seeing how an LLM would utilize market data to explore how an LLM can summarize market/news sentiment for educational purposes. This sepcific version of the bot runs on OpenAi's ChatGPT but it is not complecated to swap models to the users prefered LLM, Local Ollama models can provide good market analysis, this project was switched to OpenAi's models to provide faster and more coherent responses. 
 
 ---
 
